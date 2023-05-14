@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortableAppLauncher", "PortableAppLauncher\PortableAppLauncher.csproj", "{10EF1C4C-D6A7-437C-A731-F1EFF9B0EE19}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{10EF1C4C-D6A7-437C-A731-F1EFF9B0EE19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10EF1C4C-D6A7-437C-A731-F1EFF9B0EE19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10EF1C4C-D6A7-437C-A731-F1EFF9B0EE19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10EF1C4C-D6A7-437C-A731-F1EFF9B0EE19}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E0534A2C-E193-4667-9B72-05822D74D134}
+	EndGlobalSection
+EndGlobal
