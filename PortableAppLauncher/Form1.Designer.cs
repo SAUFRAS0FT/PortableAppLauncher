@@ -135,6 +135,7 @@
             // 
             // BTN_Settings
             // 
+            this.BTN_Settings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BTN_Settings.FlatAppearance.BorderSize = 0;
             this.BTN_Settings.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.BTN_Settings.ImageIndex = 0;
