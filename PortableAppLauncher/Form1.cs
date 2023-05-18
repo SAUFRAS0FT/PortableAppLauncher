@@ -852,7 +852,8 @@ namespace PortableAppLauncher
                 }
             }
 
-            DisplayAppList(list);
+            List<ApplicationPackage> sorted_list = PackagesDatabase.GetAppsListOrderByDisplayIndex(list);
+            DisplayAppList(sorted_list);
         }
 
 
