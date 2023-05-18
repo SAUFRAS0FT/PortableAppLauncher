@@ -12,7 +12,7 @@ namespace PortableAppLauncher
     public partial class Form1 : Form
     {
 
-        public PackagesDatabase DB = new PackagesDatabase();
+        private PackagesDatabase DB = PackagesDatabase.GetInstance();
 
         #region "Base"
         public Form1()

@@ -11,6 +11,23 @@ namespace PortableAppLauncher
 {
     public class PackagesDatabase
     {
+        #region "Singleton concept"
+        private static PackagesDatabase? _instance;
+        private static readonly object ThreadLocker = new object();
+
+        /// <summary>
+        /// Get current object of PackagesDatabase or create a new one if it is the first time this method is called
+        /// </summary>
+        /// <returns>an PackagesDatabase object</returns>
+        public static PackagesDatabase GetInstance() {
+            lock (ThreadLocker) {
+                if (_instance == null) {
+                    _instance = new PackagesDatabase();
+                }
+                return _instance;
+            }
+        }
+        #endregion
 
         public List<ApplicationPackage> Apps = new List<ApplicationPackage>();
         public int LastAppID = 0;
