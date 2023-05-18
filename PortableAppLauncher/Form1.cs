@@ -778,7 +778,8 @@ namespace PortableAppLauncher
                 }
                 try {
                     DB.Save(DB.DatabaseLocation);
-                    DisplayAppList();
+                    Thread t = new Thread(() => DisplayAppListAsync());
+                    t.Start();
                 } catch (Exception ex) {
                     MessageBox.Show("Failed to save database changes. Exception:" + Environment.NewLine + ex.Message);
                     return;
@@ -798,7 +799,8 @@ namespace PortableAppLauncher
                 }
                 try {
                     DB.Save(DB.DatabaseLocation);
-                    DisplayAppList();
+                    Thread t = new Thread(() => DisplayAppListAsync());
+                    t.Start();
                 } catch (Exception ex) {
                     MessageBox.Show("Failed to save database changes. Exception:" + Environment.NewLine + ex.Message);
                     return;
@@ -844,7 +846,8 @@ namespace PortableAppLauncher
                 }
             } else {
                 AddPackageByFiles(locations);
-                DisplayAppList();
+                Thread t = new Thread(() => DisplayAppListAsync());
+                t.Start();
                 HideAddingPanel();
             }
             
