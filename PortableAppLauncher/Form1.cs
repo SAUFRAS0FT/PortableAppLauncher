@@ -26,7 +26,8 @@ namespace PortableAppLauncher
                     Debug.WriteLine("Database created sucessfully !");
                 }
             }
-            
+            AddingPackageOperationEvent += OnAddingPackageEvent;
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -81,6 +82,8 @@ namespace PortableAppLauncher
         }
 
         private Image? GetExeLargestIcon(string ExeLocation) {
+            if (ExeLocation == null) return null;
+            if (!(File.Exists(ExeLocation))) return null;
             TsudaKageyu.IconExtractor ie = new TsudaKageyu.IconExtractor(ExeLocation);
             if (ie.Count == 0) { return null; }
             Icon ico = null;
@@ -236,6 +239,236 @@ namespace PortableAppLauncher
         #endregion
 
         #region "Adding New Package"
+
+        //Executed (on main thread) when an adding package operation finish it traitment
+        private void OnAddingPackageEvent(object? sender, AddingPackageOperationEventArg e) {
+            if (e.Statut != AddingPackageOperationEventArg.OperationState.Sucess) {
+                string MessageBoxContent = "An error occured when adding your application package. Details:" + Environment.NewLine + e.Message;
+                if (e.ErrorException != null) {
+                    MessageBoxContent += Environment.NewLine + "Exception message:" + Environment.NewLine  + e.ErrorException.Message;
+                }
+                MessageBox.Show(MessageBoxContent);
+                HideAddingPanel();
+            } else {
+                HideAddingPanel();
+                DisplayAppList();
+            }
+        }
+
+        private class AddingPackageOperationEventArg : EventArgs {
+
+            public OperationState Statut = OperationState.Unstarted;
+            public string? Message = null;
+            public Exception? ErrorException = null;
+            public string? Param1 = null;
+
+            public enum OperationState
+            {
+                Unstarted,
+                Threading,
+                Sucess,
+                Fail
+            }
+
+        }
+
+        private event EventHandler<AddingPackageOperationEventArg> AddingPackageOperationEvent;
+        private delegate void AddingPackageOperationEventDelegate(AddingPackageOperationEventArg e);
+
+        //Use to fire the event (Invoke on main thread !)
+        private void RaiseAddingPackageOperationEvent(AddingPackageOperationEventArg e) {
+            AddingPackageOperationEvent(this, e);
+        }
+
+
+        private void AddPackageByExecutableAsync(string ExecutableLocation) {
+            bool PrintDebug = false;
+            AddingPackageOperationEventDelegate dAddingPackageOperationEvent = new AddingPackageOperationEventDelegate(RaiseAddingPackageOperationEvent);
+            AddingPackageOperationEventArg EventArg = new AddingPackageOperationEventArg();
+            EventArg.Param1 = ExecutableLocation;
+
+            FileInfo fInfo = new FileInfo(ExecutableLocation);
+            string AppName = fInfo.Name.Replace(".exe", "");
+
+            string AppNewPath = Path.Combine(DB.DefaultAppSpaceLocation, AppName);
+            int version = 2;
+            while (Directory.Exists(AppNewPath)) {
+                AppNewPath = Path.Combine(DB.DefaultAppSpaceLocation, AppName) + "(" + version + ")";
+                version++;
+            }
+            try {
+                Directory.CreateDirectory(AppNewPath);
+                if (PrintDebug) Debug.WriteLine("Directory created");
+            } catch (Exception ex) {
+                EventArg.Statut = AddingPackageOperationEventArg.OperationState.Fail;
+                EventArg.Message = "Fail to create directory: " + AppNewPath;
+                EventArg.ErrorException = ex;
+                this.Invoke(dAddingPackageOperationEvent, EventArg);
+                return;
+            }
+            
+            string AppNewExecutableLocation = Path.Combine(AppNewPath, fInfo.Name);
+
+            try {
+                var ExeBytes = File.ReadAllBytes(ExecutableLocation);
+                if (PrintDebug) Debug.WriteLine("Executable file loaded in RAM");
+                File.WriteAllBytes(AppNewExecutableLocation, ExeBytes);
+                if (PrintDebug) Debug.WriteLine("File writed on disk from RAM sucess");
+            } catch (Exception ex) {
+                EventArg.Statut = AddingPackageOperationEventArg.OperationState.Fail;
+                EventArg.Message = $"Failed to copy the specified executable:{Environment.NewLine}{ExecutableLocation}{Environment.NewLine}to{Environment.NewLine}{AppNewExecutableLocation}";
+                EventArg.ErrorException = ex;
+                this.Invoke(dAddingPackageOperationEvent, EventArg);
+                return;
+            }
+            
+
+            string? AppIconLocation = Path.Combine(AppNewPath, "AppIcon.png");
+            Image? AppIcon = GetExeLargestIcon(AppNewExecutableLocation);
+            if (PrintDebug) Debug.WriteLine("Icon getted");
+            if (AppIcon != null) {
+                try {
+                    AppIcon.Save(AppIconLocation, System.Drawing.Imaging.ImageFormat.Png);
+                } catch {
+                    AppIconLocation = "";
+                    EventArg.Message = "Failed to get app icon";
+                }
+                
+                AppIcon.Dispose();
+            } else {
+                AppIconLocation = "";
+            }
+
+            ApplicationPackage app = new ApplicationPackage() {
+                Id = DB.GetNewID(),
+                ExeLocation = AppNewExecutableLocation,
+                Name = AppName,
+                DisplayIndex = DB.Apps.Count,
+                PathLocation = AppNewPath,
+                IconLocation = AppIconLocation
+            };
+            if (PrintDebug) Debug.WriteLine("ApplicationPackage created");
+            try {
+                DB.Apps.Add(app);
+                if (PrintDebug) Debug.WriteLine("Package added to RAM database");
+                DB.Save(DB.DatabaseLocation);
+                if (PrintDebug) Debug.WriteLine("Database saved to disk from ram");
+            } catch (Exception ex) {
+                EventArg.Statut = AddingPackageOperationEventArg.OperationState.Fail;
+                EventArg.Message = $"Failed to save the application to the database ({DB.DatabaseLocation}";
+                EventArg.ErrorException = ex;
+                this.Invoke(dAddingPackageOperationEvent, EventArg);
+                return;
+            }
+
+            EventArg.Statut = AddingPackageOperationEventArg.OperationState.Sucess;
+            this.Invoke(dAddingPackageOperationEvent, EventArg);
+            if (PrintDebug) Debug.WriteLine("Finish event invoked");
+        }
+
+        private void AddPackageByFolderAsync(string BasePath) {
+            bool PrintDebug = true;
+            if (PrintDebug) Debug.WriteLine("AddPackageByFolderAsync()");
+            AddingPackageOperationEventDelegate dAddingPackageOperationEvent = new AddingPackageOperationEventDelegate(RaiseAddingPackageOperationEvent);
+            AddingPackageOperationEventArg EventArg = new AddingPackageOperationEventArg();
+            EventArg.Param1 = BasePath;
+            EventArg.Statut = AddingPackageOperationEventArg.OperationState.Threading;
+
+            DirectoryInfo dInfo = new DirectoryInfo(BasePath);
+            List<string> exeFiles = new List<string>();
+            if (PrintDebug) Debug.WriteLine("Search for exe files:");
+            foreach (string file in Directory.EnumerateFiles(BasePath, "*.exe", System.IO.SearchOption.AllDirectories)) {
+                exeFiles.Add(file);
+                if (PrintDebug) Debug.WriteLine("    - " + file);
+            }
+
+            if (exeFiles.Count == 0) {
+                if (PrintDebug) Debug.WriteLine("No executable binary found");
+                EventArg.Statut = AddingPackageOperationEventArg.OperationState.Fail;
+                EventArg.Message = "Unable to add folder path '" + dInfo.Name + "' to the launcher because it doesn't contain any executable file";
+                this.Invoke(dAddingPackageOperationEvent, EventArg);
+                return;
+            }
+
+            string? exeFile = null;
+            if (exeFiles.Count > 1) {
+                if (PrintDebug) Debug.WriteLine("More than 1 executable file was found...");
+                List<string> exeFilesName = new List<string>();
+                foreach (string FullExeFile in exeFiles) {
+                    exeFilesName.Add(FullExeFile.Replace(BasePath + "\\", ""));
+                }
+                SelectDialog sDialog = new SelectDialog(exeFilesName) { Title = "Select the executable", Caption = "Severals executables are detected in the folder you provided. Please select one of these:" };
+                if (PrintDebug) Debug.WriteLine("Prompt user to select an executable file");
+                sDialog.ShowDialog();
+                if (sDialog.Completed) {
+                    if (sDialog.SelectedItem == null) { return; }
+                    exeFile = Path.Combine(dInfo.FullName, sDialog.SelectedItem);
+                    if (PrintDebug) Debug.WriteLine("User has selected this executable file: " + exeFile);
+                }
+            } else {
+                exeFile = exeFiles[0];
+            }
+
+            string NewPathLocation = Path.Combine(DB.DefaultAppSpaceLocation, dInfo.Name);
+
+            int version = 2;
+            while (Directory.Exists(NewPathLocation)) {
+                NewPathLocation = Path.Combine(DB.DefaultAppSpaceLocation, dInfo.Name) + "(" + version + ")";
+                version++;
+            }
+            if (PrintDebug) Debug.WriteLine("New destination path: " + NewPathLocation);
+            if (PrintDebug) Debug.WriteLine("Starting copy of '" + BasePath + "' to '" + NewPathLocation + "'");
+            CopyFilesRecursively(BasePath, NewPathLocation);
+
+            FileInfo ExeFileInfo = new FileInfo(exeFile);
+            //string NewExeFileLocation = Path.Combine(NewPathLocation, ExeFileInfo.Name);
+            string SourceExeRelativeLocation = ExeFileInfo.FullName.Replace(dInfo.FullName, "");
+            string NewExeFileLocation = NewPathLocation + SourceExeRelativeLocation;
+            string? AppIconLocation = Path.Combine(NewPathLocation, "AppIcon.png");
+            if (PrintDebug) Debug.WriteLine("Start extracting icon of binary '" + NewExeFileLocation);
+            Image? AppIcon = GetExeLargestIcon(NewExeFileLocation);
+            
+
+            if (AppIcon != null) {
+                try {
+                    AppIcon.Save(AppIconLocation, System.Drawing.Imaging.ImageFormat.Png);
+                    if (PrintDebug) Debug.WriteLine("Icon sucessfully saved to '" + AppIconLocation + "'");
+                } catch (Exception ex) {
+                    EventArg.Message = "Can't save app icon";
+                    EventArg.ErrorException = ex;
+                    AppIconLocation = "";
+                }
+                AppIcon.Dispose();
+            } else {
+                EventArg.Message = "Can't extract app icon";
+                AppIconLocation = "";
+            }
+
+            if (PrintDebug) Debug.WriteLine("Creating application package...");
+            ApplicationPackage app = new ApplicationPackage() {
+                Id = DB.GetNewID(),
+                ExeLocation = NewExeFileLocation,
+                Name = ExeFileInfo.Name.Replace(".exe", ""),
+                DisplayIndex = DB.Apps.Count,
+                PathLocation = NewPathLocation,
+                IconLocation = AppIconLocation
+            };
+            if (PrintDebug) Debug.WriteLine("Application package created");
+            if (PrintDebug) Debug.WriteLine("Starting adding the package to database and them save it");
+            try {
+                DB.Apps.Add(app);
+                DB.Save(DB.DatabaseLocation);
+                if (PrintDebug) Debug.WriteLine("Sucessfully added package to database and save it");
+            } catch (Exception ex) {
+                EventArg.Statut = AddingPackageOperationEventArg.OperationState.Fail;
+                EventArg.Message = "Can't save the database to " + DB.DatabaseLocation;
+                this.Invoke(dAddingPackageOperationEvent, EventArg);
+                return;
+            }
+            if (PrintDebug) Debug.WriteLine("Raise event");
+            EventArg.Statut = AddingPackageOperationEventArg.OperationState.Sucess;
+            this.Invoke(dAddingPackageOperationEvent, EventArg);
+        }
 
         private void AddPackageByFiles(string[] files) {
             string TempPath = Path.Combine(DB.DefaultAppSpaceLocation, "temp");
@@ -592,19 +825,25 @@ namespace PortableAppLauncher
                 FileSystemInfo fsi = new FileInfo(locations[0]);
                 FileAttributes attr = File.GetAttributes(locations[0]);
                 if (attr.HasFlag(FileAttributes.Directory)) {
-                    AddPackageByFolder(locations[0]);
-                    DisplayAppList();
+                    //AddPackageByFolder(locations[0]);
+                    //DisplayAppList();
+                    //HideAddingPanel();
+                    Thread t = new Thread(() => AddPackageByFolderAsync(locations[0]));
+                    t.Start();
                 } else {
                     if (fsi.Extension == ".exe") {
-                        AddPackageByExecutable(locations[0]);
-                        DisplayAppList();
+                        //AddPackageByExecutable(locations[0]);
+                        //DisplayAppList();
+                        Thread t = new Thread( () => AddPackageByExecutableAsync(locations[0]) );
+                        t.Start();
                     }
                 }
             } else {
                 AddPackageByFiles(locations);
                 DisplayAppList();
+                HideAddingPanel();
             }
-            HideAddingPanel();
+            
         }
         #endregion
 
