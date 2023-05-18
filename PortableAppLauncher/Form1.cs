@@ -5,6 +5,7 @@ using System.ComponentModel.Design;
 //using Toolbelt.Drawing;
 using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.FileIO;
+using System.Drawing.Text;
 
 namespace PortableAppLauncher
 {
@@ -32,7 +33,8 @@ namespace PortableAppLauncher
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            DisplayAppList();
+            Thread t = new Thread(() => DisplayAppListAsync());
+            t.Start();
         }
         #endregion
 
@@ -251,7 +253,8 @@ namespace PortableAppLauncher
                 HideAddingPanel();
             } else {
                 HideAddingPanel();
-                DisplayAppList();
+                Thread t = new Thread(() => DisplayAppListAsync());
+                t.Start();
             }
         }
 
@@ -728,7 +731,8 @@ namespace PortableAppLauncher
                 }
                 editor.Dispose();
             }
-            DisplayAppList();
+            Thread t = new Thread(() => DisplayAppListAsync());
+            t.Start();
         }
 
         private void ouvrirLemplacementDeLapplicationToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -848,6 +852,66 @@ namespace PortableAppLauncher
         #endregion
 
         #region "Display List Methods"
+
+        private delegate void NoParamDelegate();
+        private void ClearFlowLayoutPanel() {
+            flowLayoutPanel1.Controls.Clear();
+        }
+
+        private delegate void AddToFlowLayoutPanelDelegate(Control ctrl);
+        private void AddToFlowLayoutPanel(Control ctrl) {
+            flowLayoutPanel1.Controls.Add(ctrl);
+        }
+
+        private void DisplayAppListAsync(List<ApplicationPackage> list = null) {
+            NoParamDelegate dClearFlowLayoutPanel = new NoParamDelegate(ClearFlowLayoutPanel);
+            AddToFlowLayoutPanelDelegate dAddToFlowLayoutPanel = new AddToFlowLayoutPanelDelegate(AddToFlowLayoutPanel);
+            if (list == null) { list = PackagesDatabase.GetAppsListOrderByDisplayIndex(DB.Apps); }
+            this.Invoke(dClearFlowLayoutPanel);
+            foreach (ApplicationPackage app in list) {
+                var PanelApp = new Panel() {
+                    Size = new Size(128, 168),
+                    Name = "PanelApp_" + app.Id,
+                    Margin = new Padding(8, 8, 8, 8)
+                };
+                PanelApp.MouseDown += AppItem_MouseDown;
+                PanelApp.MouseUp += AppItem_MouseUp;
+                PanelApp.MouseEnter += AppItem_MouseEnter;
+                PanelApp.MouseLeave += AppItem_MouseLeave;
+
+                var PbApp = new PictureBox() {
+                    Size = new Size(128, 128),
+                    Name = "PictureBoxApp_" + app.Id,
+                    SizeMode = PictureBoxSizeMode.Zoom,
+                    Location = new Point(0, 0)
+                };
+                if (File.Exists(app.IconLocation)) {
+                    PbApp.ImageLocation = app.IconLocation;
+                }
+                PbApp.MouseDown += AppItem_MouseDown;
+                PbApp.MouseUp += AppItem_MouseUp;
+                PbApp.MouseEnter += AppItem_MouseEnter;
+                PbApp.MouseLeave += AppItem_MouseLeave;
+
+                var LblAppName = new Label() {
+                    Name = "LabelAppName_" + app.Id,
+                    Text = app.Name,
+                    AutoSize = false,
+                    AutoEllipsis = true,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Size = new Size(128, 40),
+                    Location = new Point(0, 128)
+                };
+                LblAppName.MouseDown += AppItem_MouseDown;
+                LblAppName.MouseUp += AppItem_MouseUp;
+                LblAppName.MouseEnter += AppItem_MouseEnter;
+                LblAppName.MouseLeave += AppItem_MouseLeave;
+
+                PanelApp.Controls.Add(PbApp);
+                PanelApp.Controls.Add(LblAppName);
+                this.Invoke(dAddToFlowLayoutPanel, PanelApp);
+            }
+        }
 
         private void DisplayAppList(List<ApplicationPackage> list = null) {
             if (list == null) { list = PackagesDatabase.GetAppsListOrderByDisplayIndex(DB.Apps); }
