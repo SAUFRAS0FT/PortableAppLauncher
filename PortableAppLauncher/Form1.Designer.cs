@@ -221,10 +221,13 @@
             this.Opacity = 0.9D;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Application Launcher";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
             this.DragLeave += new System.EventHandler(this.Form1_DragLeave);
+            this.Move += new System.EventHandler(this.Form1_Move);
             this.ItemMenuStrip.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.PB_Add_Icon)).EndInit();
             this.Panel_Adding.ResumeLayout(false);

@@ -13,6 +13,7 @@ namespace PortableAppLauncher
     {
 
         private PackagesDatabase DB = PackagesDatabase.GetInstance();
+        private SettingsManager Settings = SettingsManager.GetInstance();
 
         #region "Base"
         public Form1()
@@ -29,6 +30,34 @@ namespace PortableAppLauncher
             }
             AddingPackageOperationEvent += OnAddingPackageEvent;
 
+            
+            if (!(File.Exists(SettingsManager.SettingsFileLocation))) {
+                Settings.Save(SettingsManager.SettingsFileLocation);
+            }
+            try {
+                SettingsManager.LoadInstance(SettingsManager.SettingsFileLocation);
+                Settings = SettingsManager.GetInstance();
+            } catch (Exception ex) {
+                Debug.WriteLine("Unable to load user preferences. Details: " + ex.Message);
+            }
+            
+            SetUiSettings();
+        }
+
+        private void SetUiSettings() {
+            this.BackColor = Settings.LAUNCHER_UI_BACKGROUND_COLOR;
+            this.ForeColor = Settings.LAUNCHER_UI_TEXT_COLOR;
+            Double opacity = Settings.LAUNCHER_UI_OPACITY;
+            opacity = opacity / 100;
+            this.Opacity = opacity;
+            this.Text = Settings.LAUNCHER_TITLE;
+            TB_Search.BackColor = Settings.LAUNCHER_UI_BACKGROUND_COLOR;
+            TB_Search.ForeColor = Settings.LAUNCHER_UI_TEXT_COLOR;
+            if (Settings.LAUNCHER_LOCATION != null && Settings.LAUNCHER_RESTORE_LOCATION) {
+                this.StartPosition = FormStartPosition.Manual;
+                this.DesktopLocation = (Point)Settings.LAUNCHER_LOCATION;
+            }
+            if (Settings.LAUNCHER_RESTORE_SIZE) this.Size = Settings.LAUNCHER_UI_SIZE;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -36,6 +65,15 @@ namespace PortableAppLauncher
             Thread t = new Thread(() => DisplayAppListAsync());
             t.Start();
         }
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+            try {
+                Settings.Save(SettingsManager.SettingsFileLocation);
+            } catch {
+                MessageBox.Show("Unable to save settings.");
+            }
+        }
+
+
         #endregion
 
         #region "Fonctions"
@@ -747,9 +785,9 @@ namespace PortableAppLauncher
             this.Invoke(dClearFlowLayoutPanel);
             foreach (ApplicationPackage app in list) {
                 var PanelApp = new Panel() {
-                    Size = new Size(128, 168),
+                    Size = new Size(Settings.LAUNCHER_GRID_ELEMENT_ICON_SIZE, Settings.LAUNCHER_GRID_ELEMENT_ICON_SIZE + Settings.LAUNCHER_GRID_ELEMENT_LABEL_HEIGHT),
                     Name = "PanelApp_" + app.Id,
-                    Margin = new Padding(8, 8, 8, 8)
+                    Margin = Settings.LAUNCHER_GRID_ELEMENT_MARGIN
                 };
                 PanelApp.MouseDown += AppItem_MouseDown;
                 PanelApp.MouseUp += AppItem_MouseUp;
@@ -757,7 +795,7 @@ namespace PortableAppLauncher
                 PanelApp.MouseLeave += AppItem_MouseLeave;
 
                 var PbApp = new PictureBox() {
-                    Size = new Size(128, 128),
+                    Size = new Size(Settings.LAUNCHER_GRID_ELEMENT_ICON_SIZE, Settings.LAUNCHER_GRID_ELEMENT_ICON_SIZE),
                     Name = "PictureBoxApp_" + app.Id,
                     SizeMode = PictureBoxSizeMode.Zoom,
                     Location = new Point(0, 0)
@@ -776,8 +814,9 @@ namespace PortableAppLauncher
                     AutoSize = false,
                     AutoEllipsis = true,
                     TextAlign = ContentAlignment.MiddleCenter,
-                    Size = new Size(128, 40),
-                    Location = new Point(0, 128)
+                    Size = new Size(Settings.LAUNCHER_GRID_ELEMENT_ICON_SIZE, Settings.LAUNCHER_GRID_ELEMENT_LABEL_HEIGHT),
+                    Font = Settings.LAUNCHER_GRID_ELEMENT_LABEL_FONT,
+                    Location = new Point(0, PbApp.Size.Height)
                 };
                 LblAppName.MouseDown += AppItem_MouseDown;
                 LblAppName.MouseUp += AppItem_MouseUp;
@@ -894,6 +933,12 @@ namespace PortableAppLauncher
             Panel_Adding.Location = AddingPanelLocation;
         }
 
+        private void Form1_Move(object sender, EventArgs e) {
+            Settings.LAUNCHER_LOCATION = this.DesktopLocation;
+        }
+        private void Form1_ResizeEnd(object sender, EventArgs e) {
+            Settings.LAUNCHER_UI_SIZE = this.Size;
+        }
         #endregion
 
         #region "Controls"
@@ -921,8 +966,12 @@ namespace PortableAppLauncher
         }
 
         private void BTN_Settings_Click(object sender, EventArgs e) {
-            MessageBox.Show("Available soon (UI customization, global settings, app spaces...)");
+            //MessageBox.Show("Available soon (UI customization, global settings, app spaces...)");
+            SettingsEditor SE = new SettingsEditor();
+            SE.ShowDialog();
         }
+
+
 
         #endregion
 
