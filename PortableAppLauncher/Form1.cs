@@ -121,6 +121,27 @@ namespace PortableAppLauncher
             }
         }
 
+        public static void CopyDirectoryRecursively(DirectoryInfo source, DirectoryInfo target) {
+            foreach (DirectoryInfo dir in source.GetDirectories())
+                CopyDirectoryRecursively(dir, target.CreateSubdirectory(dir.Name));
+            foreach (FileInfo file in source.GetFiles())
+                file.CopyTo(Path.Combine(target.FullName, file.Name));
+        }
+
+        public static void CopyDirectory(string sourcePath, string DestinationPath) {
+            Directory.CreateDirectory(DestinationPath);
+            foreach (string SubDirectory in Directory.GetDirectories(sourcePath)) {
+                DirectoryInfo SubDirectoryInfo = new DirectoryInfo(SubDirectory);
+                string SubDirectoryDestination = Path.Combine(DestinationPath, SubDirectoryInfo.Name);
+                CopyDirectory(SubDirectory, SubDirectoryDestination);
+            }
+            foreach (string SourceFile in Directory.GetFiles(sourcePath)) {
+                FileInfo SourceFileInfo = new FileInfo(SourceFile);
+                string FileDestination = Path.Combine(DestinationPath, SourceFileInfo.Name);
+                File.Copy(SourceFile, FileDestination);
+            }
+        }
+
         private Image? GetExeLargestIcon(string ExeLocation) {
             if (ExeLocation == null) return null;
             if (!(File.Exists(ExeLocation))) return null;
@@ -333,7 +354,9 @@ namespace PortableAppLauncher
             }
             if (PrintDebug) Debug.WriteLine("New destination path: " + NewPathLocation);
             if (PrintDebug) Debug.WriteLine("Starting copy of '" + BasePath + "' to '" + NewPathLocation + "'");
-            CopyFilesRecursively(BasePath, NewPathLocation);
+            //CopyFilesRecursively(BasePath, NewPathLocation);
+            //CopyDirectoryRecursively(new DirectoryInfo(BasePath), new DirectoryInfo(NewPathLocation));
+            CopyDirectory(BasePath, NewPathLocation);
 
             FileInfo ExeFileInfo = new FileInfo(exeFile);
             //string NewExeFileLocation = Path.Combine(NewPathLocation, ExeFileInfo.Name);
