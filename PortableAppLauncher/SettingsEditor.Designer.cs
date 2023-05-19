@@ -63,6 +63,12 @@
             this.TabPage_Global = new System.Windows.Forms.TabPage();
             this.PanelControls = new System.Windows.Forms.Panel();
             this.BTN_Save = new System.Windows.Forms.Button();
+            this.TB_GENERAL_DATABASE_LOCATION = new System.Windows.Forms.TextBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.BTN_Browse_GENERAL_DATABASE_LOCATION = new System.Windows.Forms.Button();
+            this.BTN_Browse_GENERAL_APP_SPACE_LOCATION = new System.Windows.Forms.Button();
+            this.TB_GENERAL_APP_SPACE_LOCATION = new System.Windows.Forms.TextBox();
+            this.label20 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.TabPage_Apparence.SuspendLayout();
             this.GB_Apparence_Grid.SuspendLayout();
@@ -75,6 +81,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.ColorBox_Launcher_TextColor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NUM_Launcher_Opacity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ColorBox_Launcher_BackgroundColor)).BeginInit();
+            this.TabPage_Global.SuspendLayout();
             this.PanelControls.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -450,6 +457,12 @@
             // 
             // TabPage_Global
             // 
+            this.TabPage_Global.Controls.Add(this.BTN_Browse_GENERAL_APP_SPACE_LOCATION);
+            this.TabPage_Global.Controls.Add(this.TB_GENERAL_APP_SPACE_LOCATION);
+            this.TabPage_Global.Controls.Add(this.label20);
+            this.TabPage_Global.Controls.Add(this.BTN_Browse_GENERAL_DATABASE_LOCATION);
+            this.TabPage_Global.Controls.Add(this.TB_GENERAL_DATABASE_LOCATION);
+            this.TabPage_Global.Controls.Add(this.label18);
             this.TabPage_Global.Location = new System.Drawing.Point(4, 24);
             this.TabPage_Global.Name = "TabPage_Global";
             this.TabPage_Global.Padding = new System.Windows.Forms.Padding(3);
@@ -479,6 +492,58 @@
             this.BTN_Save.UseVisualStyleBackColor = true;
             this.BTN_Save.Click += new System.EventHandler(this.BTN_Save_Click);
             // 
+            // TB_GENERAL_DATABASE_LOCATION
+            // 
+            this.TB_GENERAL_DATABASE_LOCATION.Location = new System.Drawing.Point(156, 6);
+            this.TB_GENERAL_DATABASE_LOCATION.Name = "TB_GENERAL_DATABASE_LOCATION";
+            this.TB_GENERAL_DATABASE_LOCATION.Size = new System.Drawing.Size(317, 23);
+            this.TB_GENERAL_DATABASE_LOCATION.TabIndex = 10;
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(8, 9);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(132, 15);
+            this.label18.TabIndex = 9;
+            this.label18.Text = "App Database Location:";
+            // 
+            // BTN_Browse_GENERAL_DATABASE_LOCATION
+            // 
+            this.BTN_Browse_GENERAL_DATABASE_LOCATION.Location = new System.Drawing.Point(479, 6);
+            this.BTN_Browse_GENERAL_DATABASE_LOCATION.Name = "BTN_Browse_GENERAL_DATABASE_LOCATION";
+            this.BTN_Browse_GENERAL_DATABASE_LOCATION.Size = new System.Drawing.Size(32, 23);
+            this.BTN_Browse_GENERAL_DATABASE_LOCATION.TabIndex = 11;
+            this.BTN_Browse_GENERAL_DATABASE_LOCATION.Text = "...";
+            this.BTN_Browse_GENERAL_DATABASE_LOCATION.UseVisualStyleBackColor = true;
+            this.BTN_Browse_GENERAL_DATABASE_LOCATION.Click += new System.EventHandler(this.BTN_Browse_GENERAL_DATABASE_LOCATION_Click);
+            // 
+            // BTN_Browse_GENERAL_APP_SPACE_LOCATION
+            // 
+            this.BTN_Browse_GENERAL_APP_SPACE_LOCATION.Location = new System.Drawing.Point(479, 35);
+            this.BTN_Browse_GENERAL_APP_SPACE_LOCATION.Name = "BTN_Browse_GENERAL_APP_SPACE_LOCATION";
+            this.BTN_Browse_GENERAL_APP_SPACE_LOCATION.Size = new System.Drawing.Size(32, 23);
+            this.BTN_Browse_GENERAL_APP_SPACE_LOCATION.TabIndex = 14;
+            this.BTN_Browse_GENERAL_APP_SPACE_LOCATION.Text = "...";
+            this.BTN_Browse_GENERAL_APP_SPACE_LOCATION.UseVisualStyleBackColor = true;
+            this.BTN_Browse_GENERAL_APP_SPACE_LOCATION.Click += new System.EventHandler(this.BTN_Browse_GENERAL_APP_SPACE_LOCATION_Click);
+            // 
+            // TB_GENERAL_APP_SPACE_LOCATION
+            // 
+            this.TB_GENERAL_APP_SPACE_LOCATION.Location = new System.Drawing.Point(156, 35);
+            this.TB_GENERAL_APP_SPACE_LOCATION.Name = "TB_GENERAL_APP_SPACE_LOCATION";
+            this.TB_GENERAL_APP_SPACE_LOCATION.Size = new System.Drawing.Size(317, 23);
+            this.TB_GENERAL_APP_SPACE_LOCATION.TabIndex = 13;
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(8, 38);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(144, 15);
+            this.label20.TabIndex = 12;
+            this.label20.Text = "App Workspace Directory:";
+            // 
             // SettingsEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -504,6 +569,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.ColorBox_Launcher_TextColor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.NUM_Launcher_Opacity)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ColorBox_Launcher_BackgroundColor)).EndInit();
+            this.TabPage_Global.ResumeLayout(false);
+            this.TabPage_Global.PerformLayout();
             this.PanelControls.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -549,5 +616,11 @@
         private Label label17;
         private Button BTN_BrowseLabelElementsFont;
         private TextBox TB_LAUNCHER_GRID_ELEMENT_LABEL_FONT;
+        private Button BTN_Browse_GENERAL_APP_SPACE_LOCATION;
+        private TextBox TB_GENERAL_APP_SPACE_LOCATION;
+        private Label label20;
+        private Button BTN_Browse_GENERAL_DATABASE_LOCATION;
+        private TextBox TB_GENERAL_DATABASE_LOCATION;
+        private Label label18;
     }
 }

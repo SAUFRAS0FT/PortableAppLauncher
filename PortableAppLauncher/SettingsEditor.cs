@@ -13,6 +13,7 @@ namespace PortableAppLauncher
     public partial class SettingsEditor : Form
     {
         private SettingsManager Settings = SettingsManager.GetInstance();
+        private bool ImposeRestart = false;
         public SettingsEditor() {
             InitializeComponent();
         }
@@ -36,6 +37,8 @@ namespace PortableAppLauncher
             NUM_LAUNCHER_GRID_ELEMENT_ICON_SIZE.Value = Settings.LAUNCHER_GRID_ELEMENT_ICON_SIZE;
             NUM_LAUNCHER_GRID_ELEMENT_LABEL_HEIGHT.Value = Settings.LAUNCHER_GRID_ELEMENT_LABEL_HEIGHT;
             TB_LAUNCHER_GRID_ELEMENT_LABEL_FONT.Text = Settings.LAUNCHER_GRID_ELEMENT_LABEL_FONT.ToString();
+            TB_GENERAL_DATABASE_LOCATION.Text = Settings.GENERAL_DATABASE_LOCATION;
+            TB_GENERAL_APP_SPACE_LOCATION.Text = Settings.GENERAL_APP_SPACE_LOCATION;
         }
 
         private void BTN_Save_Click(object sender, EventArgs e) {
@@ -48,9 +51,28 @@ namespace PortableAppLauncher
             Settings.LAUNCHER_GRID_ELEMENT_MARGIN = new Padding(Convert.ToInt32(NUM_LAUNCHER_GRID_ELEMENT_MARGIN_LEFT.Value), Convert.ToInt32(NUM_LAUNCHER_GRID_ELEMENT_MARGIN_TOP.Value), Convert.ToInt32(NUM_LAUNCHER_GRID_ELEMENT_MARGIN_RIGHT.Value), Convert.ToInt32(NUM_LAUNCHER_GRID_ELEMENT_MARGIN_BOTTOM.Value));
             Settings.LAUNCHER_GRID_ELEMENT_ICON_SIZE = Convert.ToInt32(NUM_LAUNCHER_GRID_ELEMENT_ICON_SIZE.Value);
             Settings.LAUNCHER_GRID_ELEMENT_LABEL_HEIGHT = Convert.ToInt32(NUM_LAUNCHER_GRID_ELEMENT_LABEL_HEIGHT.Value);
+            if (Settings.GENERAL_DATABASE_LOCATION != TB_GENERAL_DATABASE_LOCATION.Text) { Settings.GENERAL_DATABASE_LOCATION = TB_GENERAL_DATABASE_LOCATION.Text; ImposeRestart = true; }
+            if (Settings.GENERAL_APP_SPACE_LOCATION != TB_GENERAL_APP_SPACE_LOCATION.Text) {
+                if (Directory.Exists(TB_GENERAL_APP_SPACE_LOCATION.Text) == false) {
+                    try {
+                        Directory.CreateDirectory(TB_GENERAL_APP_SPACE_LOCATION.Text);
+                    } catch (Exception ex) {
+                        MessageBox.Show("Can't create the new Apps Space Directory at:" + Environment.NewLine + TB_GENERAL_APP_SPACE_LOCATION.Text + Environment.NewLine + Environment.NewLine + "Exception detail:" + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine + "Please create the specified directory manually or please change again the App Workspace Directory to his original value", "Warning changing app default directory", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+                Settings.GENERAL_APP_SPACE_LOCATION = TB_GENERAL_APP_SPACE_LOCATION.Text;
+                ImposeRestart = true;
+            }
+            
             try {
                 Settings.Save(SettingsManager.SettingsFileLocation);
-                this.Close();
+                if (ImposeRestart) {
+                    MessageBox.Show("Application must restart to make settings changes.", "Settings saved sucessfully", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Application.Restart();
+                } else {
+                    MessageBox.Show("Some settings require an app restart to take effect", "Settings saved sucessfully", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    this.Close();
+                }
             } catch (Exception ex) {
                 MessageBox.Show("Unable to save settings ! Detail:" + Environment.NewLine + ex.Message);
             }
@@ -79,8 +101,22 @@ namespace PortableAppLauncher
                 Settings.LAUNCHER_GRID_ELEMENT_LABEL_FONT = fd.Font;
             }
         }
+        private void BTN_Browse_GENERAL_DATABASE_LOCATION_Click(object sender, EventArgs e) {
+            OpenFileDialog opf = new OpenFileDialog();
+            opf.Filter = "Serialized JSON|*.json";
+            opf.InitialDirectory = Application.StartupPath;
+            if (opf.ShowDialog() == DialogResult.OK) {
+                TB_GENERAL_DATABASE_LOCATION.Text = opf.FileName;
+            }
+        }
+
+        private void BTN_Browse_GENERAL_APP_SPACE_LOCATION_Click(object sender, EventArgs e) {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            fbd.InitialDirectory = Application.StartupPath;
+            if (fbd.ShowDialog() == DialogResult.OK) {
+                TB_GENERAL_APP_SPACE_LOCATION.Text = fbd.SelectedPath;
+            }
+        }
         #endregion
-
-
     }
 }
