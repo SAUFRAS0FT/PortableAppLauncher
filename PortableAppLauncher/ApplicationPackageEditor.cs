@@ -16,6 +16,7 @@ namespace PortableAppLauncher
 
         public ApplicationPackage? app = null;
         private PackagesDatabase DB = PackagesDatabase.GetInstance();
+        private SettingsManager Settings = SettingsManager.GetInstance();
 
         private readonly Size FormMaxSize = new Size(599, 425);
         private readonly Size FormMinSize = new Size(599, 279);
@@ -87,7 +88,7 @@ namespace PortableAppLauncher
                     }
                 }
             } else if (app.Name != null) {
-                string PotentialPathLocation = Path.Combine(DB.DefaultAppSpaceLocation, app.Name);
+                string PotentialPathLocation = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, app.Name);
                 if (Directory.Exists(PotentialPathLocation)) {
                     NewIconLocation = Path.Combine(PotentialPathLocation, "CustomAppIcon" + Extenssion);
                     int fileVersion = 2;
@@ -99,7 +100,7 @@ namespace PortableAppLauncher
             }
 
             if (NewIconLocation == null) {
-                string CustomIconPath = Path.Combine(DB.DefaultAppSpaceLocation, "CustomIcons");
+                string CustomIconPath = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, "CustomIcons");
                 if (!(Directory.Exists(CustomIconPath))) {
                     try {
                         Directory.CreateDirectory(CustomIconPath);

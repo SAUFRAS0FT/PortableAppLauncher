@@ -45,6 +45,9 @@ namespace PortableAppLauncher
         public bool LAUNCHER_COMPORTMENT_LAUNCH_AND_HIDE = false;
         public LaunchAndHideAction GENERAL_HIDE_ACTION = LaunchAndHideAction.Close_App;
 
+        public string GENERAL_DATABASE_LOCATION = Path.Combine(Application.StartupPath, "AppDatabase.json");
+        public string GENERAL_APP_SPACE_LOCATION = Path.Combine(Application.StartupPath, "Apps");
+
         #endregion
 
         #region "Enums"

@@ -31,16 +31,14 @@ namespace PortableAppLauncher
 
         public List<ApplicationPackage> Apps = new List<ApplicationPackage>();
         public int LastAppID = 0;
-
-        public string DefaultAppSpaceLocation = Path.Combine(Environment.CurrentDirectory, "Apps");
-        public string DatabaseLocation = Path.Combine(Environment.CurrentDirectory, "AppDatabase.json");
+        private SettingsManager Settings = SettingsManager.GetInstance();
 
         #region "Database Management"
 
         public int GetNewID() {
             LastAppID++;
             try {
-                Save(DatabaseLocation);
+                Save(Settings.GENERAL_DATABASE_LOCATION);
             } catch {
                 Debug.WriteLine("PackagesDatabase.GetNewID() : Failed to saved current App ID = " + LastAppID);
             }
@@ -78,7 +76,7 @@ namespace PortableAppLauncher
             }
             Apps.Add(app);
             try {
-                this.Save(DatabaseLocation);
+                this.Save(Settings.GENERAL_DATABASE_LOCATION);
             } catch (Exception ex) {
                 throw new Exception("Unable to save change in the database file. Inner exception info:" + Environment.NewLine + ex.Message);
             }
@@ -130,8 +128,6 @@ namespace PortableAppLauncher
                 if (TempObject == null) { throw new Exception("The deserialization process return a null object"); }
                 this.Apps = TempObject.Apps;
                 this.LastAppID = TempObject.LastAppID;
-                this.DefaultAppSpaceLocation = TempObject.DefaultAppSpaceLocation;
-                this.DatabaseLocation = TempObject.DatabaseLocation;
             } catch {
                 throw new Exception("Enable de deserialize PackagesDatabase object from string using JsonFormatter");
             }

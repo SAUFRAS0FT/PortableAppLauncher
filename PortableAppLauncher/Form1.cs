@@ -19,17 +19,6 @@ namespace PortableAppLauncher
         public Form1()
         {
             InitializeComponent();
-            try {
-                DB.Load(DB.DatabaseLocation);
-                Debug.WriteLine("Database loaded sucessfully !");
-            } catch (Exception ex) {
-                if (ex is FileNotFoundException) {
-                    DB.Save(DB.DatabaseLocation);
-                    Debug.WriteLine("Database created sucessfully !");
-                }
-            }
-            AddingPackageOperationEvent += OnAddingPackageEvent;
-
             
             if (!(File.Exists(SettingsManager.SettingsFileLocation))) {
                 Settings.Save(SettingsManager.SettingsFileLocation);
@@ -40,7 +29,18 @@ namespace PortableAppLauncher
             } catch (Exception ex) {
                 Debug.WriteLine("Unable to load user preferences. Details: " + ex.Message);
             }
-            
+
+            try {
+                DB.Load(Settings.GENERAL_DATABASE_LOCATION);
+                Debug.WriteLine("Database loaded sucessfully !");
+            } catch (Exception ex) {
+                if (ex is FileNotFoundException) {
+                    DB.Save(Settings.GENERAL_DATABASE_LOCATION);
+                    Debug.WriteLine("Database created sucessfully !");
+                }
+            }
+            AddingPackageOperationEvent += OnAddingPackageEvent;
+
             SetUiSettings();
         }
 
@@ -205,10 +205,10 @@ namespace PortableAppLauncher
             FileInfo fInfo = new FileInfo(ExecutableLocation);
             string AppName = fInfo.Name.Replace(".exe", "");
 
-            string AppNewPath = Path.Combine(DB.DefaultAppSpaceLocation, AppName);
+            string AppNewPath = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, AppName);
             int version = 2;
             while (Directory.Exists(AppNewPath)) {
-                AppNewPath = Path.Combine(DB.DefaultAppSpaceLocation, AppName) + "(" + version + ")";
+                AppNewPath = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, AppName) + "(" + version + ")";
                 version++;
             }
             try {
@@ -266,11 +266,11 @@ namespace PortableAppLauncher
             try {
                 DB.Apps.Add(app);
                 if (PrintDebug) Debug.WriteLine("Package added to RAM database");
-                DB.Save(DB.DatabaseLocation);
+                DB.Save(Settings.GENERAL_DATABASE_LOCATION);
                 if (PrintDebug) Debug.WriteLine("Database saved to disk from ram");
             } catch (Exception ex) {
                 EventArg.Statut = AddingPackageOperationEventArg.OperationState.Fail;
-                EventArg.Message = $"Failed to save the application to the database ({DB.DatabaseLocation}";
+                EventArg.Message = $"Failed to save the application to the database ({Settings.GENERAL_DATABASE_LOCATION}";
                 EventArg.ErrorException = ex;
                 this.Invoke(dAddingPackageOperationEvent, EventArg);
                 return;
@@ -324,11 +324,11 @@ namespace PortableAppLauncher
                 exeFile = exeFiles[0];
             }
 
-            string NewPathLocation = Path.Combine(DB.DefaultAppSpaceLocation, dInfo.Name);
+            string NewPathLocation = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, dInfo.Name);
 
             int version = 2;
             while (Directory.Exists(NewPathLocation)) {
-                NewPathLocation = Path.Combine(DB.DefaultAppSpaceLocation, dInfo.Name) + "(" + version + ")";
+                NewPathLocation = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, dInfo.Name) + "(" + version + ")";
                 version++;
             }
             if (PrintDebug) Debug.WriteLine("New destination path: " + NewPathLocation);
@@ -372,11 +372,11 @@ namespace PortableAppLauncher
             if (PrintDebug) Debug.WriteLine("Starting adding the package to database and them save it");
             try {
                 DB.Apps.Add(app);
-                DB.Save(DB.DatabaseLocation);
+                DB.Save(Settings.GENERAL_DATABASE_LOCATION);
                 if (PrintDebug) Debug.WriteLine("Sucessfully added package to database and save it");
             } catch (Exception ex) {
                 EventArg.Statut = AddingPackageOperationEventArg.OperationState.Fail;
-                EventArg.Message = "Can't save the database to " + DB.DatabaseLocation;
+                EventArg.Message = "Can't save the database to " + Settings.GENERAL_DATABASE_LOCATION;
                 this.Invoke(dAddingPackageOperationEvent, EventArg);
                 return;
             }
@@ -386,7 +386,7 @@ namespace PortableAppLauncher
         }
 
         private void AddPackageByFiles(string[] files) {
-            string TempPath = Path.Combine(DB.DefaultAppSpaceLocation, "temp");
+            string TempPath = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, "temp");
             Directory.CreateDirectory(TempPath);
 
             foreach (string file in files) {
@@ -467,7 +467,7 @@ namespace PortableAppLauncher
             };
 
             DB.Apps.Add(app);
-            DB.Save(DB.DatabaseLocation);
+            DB.Save(Settings.GENERAL_DATABASE_LOCATION);
         }
 
         private void AddPackageByFolder(string BasePath) {
@@ -499,11 +499,11 @@ namespace PortableAppLauncher
                 exeFile = exeFiles[0];
             }
 
-            string NewPathLocation = Path.Combine(DB.DefaultAppSpaceLocation, dInfo.Name);
+            string NewPathLocation = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, dInfo.Name);
 
             int version = 2;
             while (Directory.Exists(NewPathLocation)) {
-                NewPathLocation = Path.Combine(DB.DefaultAppSpaceLocation, dInfo.Name) + "(" + version + ")";
+                NewPathLocation = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, dInfo.Name) + "(" + version + ")";
                 version++;
             }
 
@@ -534,17 +534,17 @@ namespace PortableAppLauncher
             };
 
             DB.Apps.Add(app);
-            DB.Save(DB.DatabaseLocation);
+            DB.Save(Settings.GENERAL_DATABASE_LOCATION);
         }
 
         private void AddPackageByExecutable(string ExecutableLocation) {
             FileInfo fInfo = new FileInfo(ExecutableLocation);
             string AppName = fInfo.Name.Replace(".exe", "");
 
-            string AppNewPath = Path.Combine(DB.DefaultAppSpaceLocation, AppName);
+            string AppNewPath = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, AppName);
             int version = 2;
             while (Directory.Exists(AppNewPath)) {
-                AppNewPath = Path.Combine(DB.DefaultAppSpaceLocation, AppName) + "(" + version + ")";
+                AppNewPath = Path.Combine(Settings.GENERAL_APP_SPACE_LOCATION, AppName) + "(" + version + ")";
                 version++;
             }
             Directory.CreateDirectory(AppNewPath);
@@ -573,7 +573,7 @@ namespace PortableAppLauncher
             };
 
             DB.Apps.Add(app);
-            DB.Save(DB.DatabaseLocation);
+            DB.Save(Settings.GENERAL_DATABASE_LOCATION);
         }
         #endregion
 
@@ -689,7 +689,7 @@ namespace PortableAppLauncher
                     return;
                 }
                 try {
-                    DB.Save(DB.DatabaseLocation);
+                    DB.Save(Settings.GENERAL_DATABASE_LOCATION);
                     Thread t = new Thread(() => DisplayAppListAsync());
                     t.Start();
                 } catch (Exception ex) {
@@ -710,7 +710,7 @@ namespace PortableAppLauncher
                     return;
                 }
                 try {
-                    DB.Save(DB.DatabaseLocation);
+                    DB.Save(Settings.GENERAL_DATABASE_LOCATION);
                     Thread t = new Thread(() => DisplayAppListAsync());
                     t.Start();
                 } catch (Exception ex) {
