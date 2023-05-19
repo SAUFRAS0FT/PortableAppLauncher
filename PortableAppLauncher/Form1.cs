@@ -168,6 +168,8 @@ namespace PortableAppLauncher
                     }
                 } catch { Debug.WriteLine($"Unable to acess icon 0, {icon.Height} px from executable {ExeLocation}"); continue; }
             }
+
+            if (returnImage == null) { returnImage = Properties.Resources.default_application_icon; }
             return returnImage;
         }
 
