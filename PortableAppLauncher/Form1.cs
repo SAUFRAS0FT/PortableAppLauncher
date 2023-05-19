@@ -143,17 +143,17 @@ namespace PortableAppLauncher
         }
 
         private Image? GetExeLargestIcon(string ExeLocation) {
-            if (ExeLocation == null) return null;
-            if (!(File.Exists(ExeLocation))) return null;
+            if (ExeLocation == null) return Properties.Resources.default_application_icon;
+            if (!(File.Exists(ExeLocation))) return Properties.Resources.default_application_icon;
             TsudaKageyu.IconExtractor ie = new TsudaKageyu.IconExtractor(ExeLocation);
-            if (ie.Count == 0) { return null; }
-            Icon ico = null;
+            if (ie.Count == 0) { return Properties.Resources.default_application_icon; }
+            Icon? ico = null;
             ico = ie.GetIcon(0);
-            if (ico == null) { return null;}
+            if (ico == null) { return Properties.Resources.default_application_icon; }
             Icon[] Icons;
             Icons = IconUtil.SplitIcon(ico);
 
-            Image returnImage = null;
+            Image? returnImage = null;
             foreach (Icon icon in Icons) {
                 try {
                     var iconData = IconUtil.GetIconData(icon);
@@ -380,6 +380,7 @@ namespace PortableAppLauncher
                 }
                 AppIcon.Dispose();
             } else {
+                MessageBox.Show("Can't extract app icon");
                 EventArg.Message = "Can't extract app icon";
                 AppIconLocation = "";
             }
