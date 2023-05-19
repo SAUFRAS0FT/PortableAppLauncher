@@ -9,10 +9,10 @@
     <ApplicationIcon>application.ico</ApplicationIcon>
     <RepositoryUrl>https://github.com/SAUFRAS0FT/PortableAppLauncher</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0.1</AssemblyVersion>
     <Authors>SAUFRAS0FT</Authors>
     <Description>Application Folder</Description>
-    <FileVersion>1.1.0.0</FileVersion>
+    <FileVersion>1.1.0.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
